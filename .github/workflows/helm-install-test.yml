@@ -1,0 +1,85 @@
+#
+# Copyright 2025 The OKDP Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+name: ci
+
+on:
+  workflow_call:
+    inputs:
+      skip_chart_test:
+        description: Wether to deploy and test the chart
+        required: false
+        type: boolean
+        default: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+
+  helm-install-test:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Checkout Repo ⚡️
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup helm
+        uses: azure/setup-helm@v4.2.0
+        with:
+          version: v3.15.1
+
+      - name: Set up kind cluster ✅
+        uses: okdp/gh-workflows/.github/actions/setup-kind@v1
+
+      - name: Install opa-server
+        run: helm install --create-namespace -n opa-ns opa helm/opa-server && timeout 60 sh -c "until kubectl get pods -n opa-ns -l app.kubernetes.io/name=opa-server | awk 'NR>1 {print $2}'| grep -q 1/1; do sleep 2; done"
+
+      - name: Install opal-secrets
+        run: helm install -n opa-ns opal-secrets helm/opal-secrets && timeout 60 sh -c "until kubectl get pods -n opa-ns -l batch.kubernetes.io/job-name=opal-secrets-generator | awk 'NR>1 {print $3}'| grep -q Completed; do sleep 2; done"
+
+      - name: Verify if secrets have been generated
+        run: |
+          list="opal-client-token-secret opal-master-token-secret opal-ssh-secret"
+          for item in $list
+          do
+              if [ "$(kubectl get secret -n opa-ns $item | awk 'NR>1 {print $1}')" == $item ]; then
+                  echo "$item secret has been generated"
+              else
+                  echo " $item secret missing"
+                  exit 1
+              fi
+          done
+
+      - name: Install OPAL in secure mode
+        run : |
+          helm repo add permitio https://permitio.github.io/opal-helm-chart
+          helm repo update
+          helm install -n opa-ns -f helm/opal/values.yaml --version 0.0.30 opal permitio/opal \
+          && timeout 180 sh -c "until kubectl get pods -n opa-ns -l app.kubernetes.io/name=opal-client | awk 'NR>1 {print $2}'| grep -q 1/1; do sleep 2; done"
+
+      - name: Verify OPAL server works in secure mode
+        run: |
+          OPAL_SERVER_POD=$(kubectl get pods -n opa-ns -l app.kubernetes.io/name=opal-server | awk 'NR>1 {print $1}')
+          SECORE_MODE_ON=$(kubectl logs -n opa-ns $OPAL_SERVER_POD | grep "OPAL is running in secure mode - will verify API requests with JWT tokens.")
+          if [[ -n "$SECORE_MODE_ON" ]]; then
+            echo "Secure mode is on"
+          else
+            echo "Secure mode is off"
+            exit 1
+          fi
