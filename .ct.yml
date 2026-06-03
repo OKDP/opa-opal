@@ -1,0 +1,6 @@
+lint-conf: .lintconf.yml
+remote: origin
+target-branch: master
+chart-dirs:
+  - helm
+debug: false
