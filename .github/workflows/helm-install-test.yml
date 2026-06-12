@@ -48,7 +48,10 @@ jobs:
         uses: okdp/gh-workflows/.github/actions/setup-kind@v1
 
       - name: Install opa-server
-        run: helm install --create-namespace -n opa-ns opa helm/opa-server && timeout 60 sh -c "until kubectl get pods -n opa-ns -l app.kubernetes.io/name=opa-server | awk 'NR>1 {print $2}'| grep -q 1/1; do sleep 2; done"
+        run: |
+          helm repo add opa-kube-mgmt https://open-policy-agent.github.io/kube-mgmt/charts
+          helm repo update
+          helm install --create-namespace -n opa-ns opa opa-kube-mgmt/opa-kube-mgmt --version 11.0.7 -f helm/opa-server/values.yaml && timeout 60 sh -c "until kubectl get pods -n opa-ns -l app=opa | awk 'NR>1 {print $2}'| grep -q 1/1; do sleep 2; done"
 
       - name: Install opal-secrets
         run: helm install -n opa-ns opal-secrets helm/opal-secrets && timeout 60 sh -c "until kubectl get pods -n opa-ns -l batch.kubernetes.io/job-name=opal-secrets-generator | awk 'NR>1 {print $3}'| grep -q Completed; do sleep 2; done"
