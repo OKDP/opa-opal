@@ -36,11 +36,7 @@ jobs:
         run: helm registry login quay.io -u "${{ secrets.REGISTRY_USERNAME }}" -p "${{ secrets.REGISTRY_ROBOT_TOKEN }}"
 
       - name: Package helm charts
-        run: |
-          helm package helm/opa-server
-          helm package helm/opal-secrets
+        run: helm package helm/opal-secrets
 
       - name: Publish charts
-        run: |
-          helm push $(find . -type f -name "opa-server-*.tgz") oci://quay.io/okdp/charts
-          helm push $(find . -type f -name "opal-secrets-*.tgz") oci://quay.io/okdp/charts
+        run: helm push $(find . -type f -name "opal-secrets-*.tgz") oci://quay.io/okdp/charts
