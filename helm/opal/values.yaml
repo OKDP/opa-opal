@@ -2,7 +2,7 @@ broadcastReplicas: 1
 client:
   containerSecurityContext: {}
   extraEnv:
-    OPAL_POLICY_STORE_URL: http://opa:443
+    OPAL_POLICY_STORE_URL: http://opa:8181
     # For postgres integration as datasource
     # OPAL_FETCH_PROVIDER_MODULES: opal_common.fetcher.providers,opal_fetcher_postgres.provider
   opaPort: 8181
