@@ -118,15 +118,16 @@ The full chart custom values are in the [Helm chart](helm/opal/values.yaml). Her
 
 | Parameter | Description | Default |
 |---|---|---|
-| `server.policyRepoUrl` | URL of your policy repository | `https://github.com/OKDP/trino-opal-example-policy.git` |
+| `server.policyRepoUrl` | URL of your policy repository | `https://github.com/OKDP/okdp-examples.git` |
 | `server.policyRepoSshKey` | ssh private key allowed to access your private policy repository | `false` |
-| `server.policyRepoMainBranch` | Used branch of the policy repository  | `master` |
+| `server.policyRepoMainBranch` | Used branch of the policy repository  | `main` |
 | `server.extraEnv.OPAL_POLICY_REPO_WEBHOOK_SECRET` | GitHub webhook secret | `null` |
-| `server.extraEnv.OPAL_POLICY_REPO_WEBHOOK_SECRET` | The repository used for the OPA image | `null` |
+| `server.extraEnv.OPAL_POLICY_REPO_MANIFEST_PATH` | Path to the manifest file | `trino_opa_policy` |
 | `server.pollingInterval` | Interval between the polling of the server | `30` |
 | `server.secrets` | K8s secrets containing ssh keys and master token | `[opal-ssh-secret, opal-master-token-secret]` |
 | `server.dataConfigSources.config.entries` |  External source for policy data | `[]` |
 | `client.extraEnv.OPAL_POLICY_STORE_URL` | OPA server URL | `http://opa:8181` |
+| `client.extraEnv.OPAL_POLICY_SUBSCRIPTION_DIRS` | Path(s) to the policy files, seperated by `:` | `trino_opa_policy` |
 | `client.secrets` | K8s secret containing generated client token | `[opal-client-token-secret]` |
 | `image.client.repository` |  The image used for the OPA client | `permitio/opal-client-standalone` |
 | `image.client.tag` |  The version of the OPAL client image | `0.9.4` |

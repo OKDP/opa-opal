@@ -19,6 +19,7 @@ client:
   containerSecurityContext: {}
   extraEnv:
     OPAL_POLICY_STORE_URL: http://opa:8181
+    OPAL_POLICY_SUBSCRIPTION_DIRS: trino_opa_policy
     # For postgres integration as datasource
     # OPAL_FETCH_PROVIDER_MODULES: opal_common.fetcher.providers,opal_fetcher_postgres.provider
   opaPort: 8181
@@ -71,13 +72,14 @@ server:
   secrets:
     - opal-ssh-secret
     - opal-master-token-secret
-  # extraEnv:
+  extraEnv:
+    OPAL_POLICY_REPO_MANIFEST_PATH: trino_opa_policy
     # OPAL_POLICY_REPO_WEBHOOK_SECRET: null
   policyRepoClonePath: null
-  policyRepoMainBranch: master
+  policyRepoMainBranch: main
   # If the policy repository is private set the ssh private key
   policyRepoSshKey:
-  policyRepoUrl: https://github.com/OKDP/trino-opal-example-policy.git
+  policyRepoUrl: https://github.com/OKDP/okdp-examples.git
   # Set to 0 if webhook is used
   pollingInterval: 30
   port: 7002
