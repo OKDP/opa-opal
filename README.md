@@ -61,6 +61,14 @@ Install OPA without kube-mgmt in opa-ns namespace with custom values
 helm install --create-namespace -n opa-ns opa opa-kube-mgmt/opa-kube-mgmt --version 11.0.7 -f helm/opa-server/values.yaml
 ```
 
+Install OPA with kube-mgmt in opa-ns namespace with custom values
+
+```sh
+helm install --create-namespace -n opa-ns opa opa-kube-mgmt/opa-kube-mgmt --version 11.0.7 -f helm/opa-server/values-mgmt.yaml
+```
+
+*NB*: Do not deploy OPAL afterwards if Kube-management is deployed as both will conflict.
+
 ### OPA configuration
 
 The full chart custom values are in the [Helm chart](helm/opa-server/values.yaml). Here are some customized values for our deployment:
@@ -72,7 +80,8 @@ The full chart custom values are in the [Helm chart](helm/opa-server/values.yaml
 | `port` | Port to which the OPA pod will bind itself | `8181` |
 | `image.repository` | The image used for OPA | `openpolicyagent/opa` |
 | `image.tag` | The version of the OPA image | `1.16.1` |
-| `mgmt.enabled` | Enable Kube-management for OPA | `false` |
+| `mgmt.enabled` | Enable Kube-management for OPA | `false` in values.yaml and `true` in values-mgmt.yaml |
+| `mgmt.namespace` | Limit Kube-management to search policies and adta to a list of namespaces, if empty it is limited to the current namespace, | `[]` |
 | `authz.enabled` | Enable Authorization token verification for Kube-management | `false` |
 | `rbac.create` |  Create ClusterRole for Kube-management | `false`|
 | `serviceAccount.create` |  Create serviceAccount for Kube-management | `false` |
